@@ -26,7 +26,7 @@ These features are stored in a Temple object, which is printed below:
 ```
 
 ## Future Work
-The goal is to eventually create a tool to help players optimally build their temples across the 12 Incursions.
+The goal is to eventually create a tool to help players optimally build their temples across the 12 Incursions. It also needs more testing on other resolutions.
 
 ## Acknowledgements
 This uses OpenCV with Pytesseract to perform OCR on image masks.
