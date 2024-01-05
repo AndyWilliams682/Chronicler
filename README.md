@@ -3,7 +3,7 @@
 A tool that analyzes screenshots from Path of Exile and reads the Incursion menu, which has a temple (made up of 13 rooms). These rooms may or may not be connected. There is also a room that is selected for the specific Incursion event, and the player may change that room to one of two options.
 
 ## Tool Showcase
-![](https://imgur.com/a/OGFHl2Y)
+![](https://imgur.com/a/OGFHl2Y.png)
 The main features that need to be recognized from this image are:
   1) What rooms are in the temple? Where are they? (Ex: Pits is the third layer up, second from the right)
   2) What rooms are connected? What rooms are "Opened" (have a path to the Entrance)? (Ex: Workshop is not "opened")
