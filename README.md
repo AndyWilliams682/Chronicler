@@ -24,6 +24,7 @@ These features are stored in a Temple object, which is printed below:
     1 Incursions Remaining
       LN1 <-- hh0 --> IR1
 ```
+Rooms use an abbreviation based on their "Theme" (Currency, Weapons, Armour, etc) and their tier (0 to 3). For example, Treasury is the Tier 2 Currency room, so it is displayed as `$$2`. Opened rooms are displayed with `()`, while obstructed rooms use `[]`. The chosen room for the Incursion is highlighted with `* *`. In this image that room is Pits (abbreviated as `hh0`). The rooms it can swap to are shown at the very bottom (going left in the Incursion will swap to a Lightning Workshop (`LN1`)).
 
 ## Future Work
 The goal is to eventually create a tool to help players optimally build their temples across the 12 Incursions. It also needs more testing on other resolutions.
