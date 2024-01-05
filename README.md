@@ -3,8 +3,8 @@
 A tool that analyzes screenshots from Path of Exile and reads the Incursion menu, which has a temple (made up of 13 rooms). These rooms may or may not be connected. There is also a room that is selected for the specific Incursion event, and the player may change that room to one of two options.
 
 ## Tool Showcase
-![](https://imgur.com/a/OGFHl2Y.png)
-The main features that need to be recognized from this image are:
+![](https://i.imgur.com/NiOwCgp.jpg)
+The features that need to be recognized from this image are from the "Temple of Atzoatl" (Incursion) menu in the center of the screen:
   1) What rooms are in the temple? Where are they? (Ex: Pits is the third layer up, second from the right)
   2) What rooms are connected? What rooms are "Opened" (have a path to the Entrance)? (Ex: Workshop is not "opened")
   3) How many Incursions are remaining (1 in this image)
@@ -27,3 +27,6 @@ These features are stored in a Temple object, which is printed below:
 
 ## Future Work
 The goal is to eventually create a tool to help players optimally build their temples across the 12 Incursions.
+
+## Acknowledgements
+This uses OpenCV with Pytesseract to perform OCR on image masks.
