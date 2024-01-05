@@ -1,0 +1,7 @@
+# Untracked files
+/Images
+/.vscode
+/.venv
+/__pycache__
+/1080p
+*.ods*
