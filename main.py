@@ -29,9 +29,10 @@ if __name__ == '__main__':
     plt_cols = 2
     total_plots = plt_rows * plt_cols
 
-    folder_dir = r'Images'
+    folder_dir = r'Images\1440pNvidia'
 
     for filename in listdir(folder_dir):
+        print(filename)
         path_to_image = path.join(folder_dir, filename)
         image = cv2.imread(path_to_image)[..., ::-1] # RGB
         image = crop_to_incursion_menu(image)

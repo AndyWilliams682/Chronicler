@@ -3,6 +3,7 @@ import cv2
 from math import floor, ceil
 import pytesseract
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 PATH_TO_POPPLER_EXE = Path(r"C:\Program Files\poppler-0.68.0\bin")
@@ -14,8 +15,8 @@ pytesseract.pytesseract.tesseract_cmd = (
 ROOM_BORDER_RANGES = {
     # Old Obstructed (15, 167, 99), (15, 167, 99)
     'Obstructed': ((15, 167, 99), (15, 167, 99)), # Min / Max for each in HSV
-    # Old Open (15, 151, 204), (15, 151, 204)
-    # New Open (13, 63, 171), (15, 151, 204)
+    # Old Open ((15, 151, 204), (15, 151, 204))
+    # New Open ((9, 45, 157), (66, 151, 206)), Steam screenshot compression causing issues
     'Open': ((15, 151, 204), (15, 151, 204)),
     'Chosen': ((17, 126, 242), (27, 165, 255))
 }
@@ -61,9 +62,15 @@ def get_room_boxes(hsv_menu_image):
     mask = np.full((hsv_menu_image.shape[0], hsv_menu_image.shape[1]), 0, dtype=np.uint8)
     for room_status, border_range in ROOM_BORDER_RANGES.items():
         mask = cv2.add(mask, cv2.inRange(hsv_menu_image, border_range[0], border_range[1]))
-    
+
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     boundingBoxes = [cv2.boundingRect(contour) for contour in contours]
+
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(hsv_menu_image)
+    axs[1].imshow(mask)
+    plt.show()
+    exit()
     
     room_boxes = []
     idx = -1
