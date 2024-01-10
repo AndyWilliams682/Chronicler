@@ -9,12 +9,6 @@ import keyboard as kb
 import time
 
 
-# Assumes the menu takes up the same amount of space independent of resolution
-MENU_LEFT_PERCENTAGE = 383 / 2560
-MENU_RIGHT_PERCENTAGE = 2210 / 2560 # Subtract 35 from numerator for just the main menu
-MENU_TOP_PERCENTAGE = 71 / 1440
-MENU_BOTTOM_PERCENTAGE = 1183 / 1440
-
 CLIENT_TXT = r'C:\Program Files (x86)\Steam\steamapps\common\Path of Exile\logs\Client.txt'
 INCURSION_KEYBIND = 'v'
 
@@ -88,7 +82,7 @@ if __name__ == '__main__':
 
     # Batch testing
     # count = 0
-    # folder_dir = r'Images\1440pNvidia'
+    # folder_dir = r'Images\Spencer'
     # for filename in listdir(folder_dir):
     #     count += 1
     #     print(filename, count)
@@ -96,5 +90,5 @@ if __name__ == '__main__':
     #     image = cv2.imread(path_to_image)[..., ::-1] # RGB
     #     hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     #     test = Temple(hsv_image)
-    #     # print(test)
+    #     print(test)
     #     print()
