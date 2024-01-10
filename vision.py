@@ -4,6 +4,7 @@ from math import floor, ceil
 import pytesseract
 from pathlib import Path
 import matplotlib.pyplot as plt
+import difflib
 
 
 PATH_TO_POPPLER_EXE = Path(r"C:\Program Files\poppler-0.68.0\bin")
@@ -18,37 +19,29 @@ ROOM_BORDER_RANGES = {
     # Old Open ((15, 151, 204), (15, 151, 204))
     # New Open ((9, 45, 157), (66, 151, 206)), Steam screenshot compression causing issues
     'Open': ((15, 151, 204), (15, 151, 204)),
-    'Chosen': ((17, 126, 242), (27, 165, 255))
+    'Chosen': ((17, 126, 240), (27, 166, 255))
 }
 
 # HSV ranges for isolating other elements in the menu
-SUBMENU_TEXT_RANGE = ((0, 0, 54), (30, 9, 127))
+SUBMENU_TEXT_RANGE = ((0, 0, 53), (30, 17, 127))
 INC_REM_TEXT_RANGE = ((0, 0, 104), (0, 4, 254))
-ROOM_TEXT_RANGE = ((58, 64, 41), (73, 112, 228))
+ROOM_TEXT_RANGE = ((58, 64, 41), (74, 112, 228))
 CONNECTION_RANGE = ((30, 43, 120), (30, 140, 255))
 
+TESS_CONFIG = '-c tessedit_char_whitelist="01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz"'
 
-def post_ocr_correction(raw_ocr, is_number=False):
+with open("words.txt") as f:
+    WORDS = f.read().split('\n')
+
+
+def post_ocr_correction(raw_ocr):
     """
     Treating OCR output as raw data, requires some simple corrections
     """
-    output = raw_ocr.replace('’', '\'') # Surveyor's Study
-    output = output.replace('\n', ' ') # Hybridisation Chamber / Gemcutter's Workshop
-    output = output.replace('(;', 'G') # Glittering Halls
-    output = output.replace(' LI', ' U') # Sanctum of Unity
-    output = output.replace(' $', '\'S') # Gemcutter's Workshop / Jeweller's Workshop
-    output = output.replace('I S', 'I\'S') # Doryani's Institute
-
+    output = raw_ocr.upper()
+    output = output.replace('\n', ' ') # Removing newlines between room words
     output = output.replace(')', '') # Removing closing ) from incursion submenu
-    output = output.replace('}', '') # Removing closing } from incursion submenu
-    output = output.replace('FALL', 'HALL') # Hall of Offerings from incursion submenu
-
-    if is_number: # Corrections for X in "X Incursions Remaining"
-        output = output.replace('17', '12')
-        output = output.replace('S', '8')
-        output = output.replace('b', '6')
-        output = output.replace('58', '5')
-
+    output = difflib.get_close_matches(output, WORDS, n=1)[0] # Spellcheck, may want to cache results
     return output
 
 
@@ -65,25 +58,23 @@ def get_room_boxes(hsv_menu_image):
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     boundingBoxes = [cv2.boundingRect(contour) for contour in contours]
-
-    fig, axs = plt.subplots(1, 2)
-    axs[0].imshow(hsv_menu_image)
-    axs[1].imshow(mask)
-    plt.show()
-    exit()
     
     room_boxes = []
     idx = -1
+    # Assuming no contour will be larger than the rooms
+    room_w_cutoff = 0.8 * max(box[2] for box in boundingBoxes)
+    room_h_cuttof = 0.8 * max(box[3] for box in boundingBoxes)
     for bounding_box in boundingBoxes:
         idx += 1
-        if bounding_box[2] < 90 or bounding_box[3] < 90 or hierarchy[0, idx, 3] != -1:
+        # Hard-coded values here may cause issues with smaller resolutions
+        if bounding_box[2] < room_w_cutoff or bounding_box[3] < room_h_cuttof or hierarchy[0, idx, 3] != -1:
             continue
         room_boxes.append(bounding_box)
 
     return room_boxes
 
 
-def get_text_mask(hsv_image, text_hsv_range, reduce_noise=False):
+def get_text_mask(hsv_image, text_hsv_range, reduce_noise=False, debug=False):
     """
     Using a text_hsv_range, isolates text in the image. Performs morphological operations to enhance readability and reduce noise.
     """
@@ -108,9 +99,10 @@ def get_text_mask(hsv_image, text_hsv_range, reduce_noise=False):
     if reduce_noise is True:
         cnts, H = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for c in cnts:
-            x, y, w, h = cv2.boundingRect(c)
-            ar = w / float(h)
-            if h < 15:
+            box_x, box_y, box_w, box_h = cv2.boundingRect(c)
+            ar = box_w / float(box_h)
+            # Could also do an aspect ratio check (smallest acceptable would be PITS)
+            if box_h < 0.2 * h:
                 cv2.drawContours(dilation, [c], -1, (0, 0, 0), -1)
     
     # Scanning from the bottom of the region until a cutoff is reached
@@ -128,15 +120,29 @@ def get_text_mask(hsv_image, text_hsv_range, reduce_noise=False):
     
     # Only keep original text within the blobs in the cutoff region
     result = 255 - cv2.bitwise_and(dilation[row_cutoff:], font_mask[row_cutoff:])
+    
+    # Padding the text with empty space helps remove some edge-errors
+    border_size = 10
+    result = cv2.copyMakeBorder(
+        result,
+        top=border_size,
+        bottom=border_size,
+        left=border_size,
+        right=border_size,
+        borderType=cv2.BORDER_CONSTANT,
+        value=[255, 255, 255]
+    )
+
+    result = cv2.resize(result, None, fx=2, fy=2, interpolation=cv2.INTER_NEAREST)
 
     # For debugging / testing
-    # if text_hsv_range == INC_REM_TEXT_RANGE:
-    #     fig, axs = plt.subplots(2, 2, figsize=(10, 6), layout='constrained')
-    #     axs[0, 0].imshow(hsv_image)
-    #     axs[0, 1].imshow(opening, cmap='gray')
-    #     axs[1, 0].imshow(dilation, cmap='gray')
-    #     axs[1, 1].imshow(result, cmap='gray')
-    #     plt.show()
+    if debug:
+        fig, axs = plt.subplots(2, 2, figsize=(10, 6), layout='constrained')
+        axs[0, 0].imshow(hsv_image)
+        axs[0, 1].imshow(opening, cmap='gray')
+        axs[1, 0].imshow(dilation, cmap='gray')
+        axs[1, 1].imshow(result, cmap='gray')
+        plt.show()
     return result
 
 
@@ -145,12 +151,14 @@ def read_incursion_submenu(hsv_incursion_submenu):
     The incursion submenu is the upper-right corner of the temple menu, which details the different room options for that incursion.
     Typically, going right (up) will upgrade the current room (if possible), while going left will swap to a tier 1 room of a different theme.
     """
-    text_mask = get_text_mask(hsv_incursion_submenu, SUBMENU_TEXT_RANGE)
-    left_region = text_mask[:, :floor(len(text_mask[0]) / 2)]
-    right_region = text_mask[:, floor(len(text_mask[0]) / 2):]
+    left_region = get_text_mask(hsv_incursion_submenu[:, :floor(len(hsv_incursion_submenu[0]) / 2)], SUBMENU_TEXT_RANGE)
+    right_region = get_text_mask(hsv_incursion_submenu[:, floor(len(hsv_incursion_submenu[0]) / 2):], SUBMENU_TEXT_RANGE)
+
     # Split by 'E TO ' to capture both 'CHANGE TO ' and 'UPGRADE TO '
-    left_ocr = pytesseract.image_to_string(left_region, config='--psm 6').strip().replace('\n', ' ').split('E TO ')[1].upper()
-    right_ocr = pytesseract.image_to_string(right_region, config='--psm 6').strip().replace('\n', ' ').split('E TO ')[1].upper() # May want to move .upper() to post_ocr_correction
+    left_ocr = pytesseract.image_to_string(left_region, config='-c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz()\'" --psm 6')
+    left_ocr = left_ocr.strip().replace('\n', ' ').split('E TO ')[1]
+    right_ocr = pytesseract.image_to_string(right_region, config='-c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz()\'"--psm 6')
+    right_ocr = right_ocr.strip().replace('\n', ' ').split('E TO ')[1]
     left_output = post_ocr_correction(left_ocr)
     right_output = post_ocr_correction(right_ocr)
     return  (left_output, right_output)
@@ -161,16 +169,21 @@ def read_incursions_remaining(hsv_incursions_remaining):
     Reading X from "X Incursions Remaining"
     """
     text_mask = get_text_mask(hsv_incursions_remaining, INC_REM_TEXT_RANGE)
-    inc_rem = pytesseract.image_to_string(text_mask, config='--psm 7').split(' ')[0]
-    return int(post_ocr_correction(inc_rem, is_number=True))
+    inc_rem = pytesseract.image_to_string(text_mask, config='-c tessedit_char_whitelist="0123456789ACEGIMNORSU acegimnorsu" --psm 7').split(' ')[0]
+    return int(post_ocr_correction(inc_rem))
 
 
-def read_room_text(hsv_room):
-    text_mask = get_text_mask(hsv_room, ROOM_TEXT_RANGE, reduce_noise=True)
+def read_room_text(hsv_room, debug=False):
+    text_mask = get_text_mask(hsv_room, ROOM_TEXT_RANGE, reduce_noise=True, debug=debug)
 
-    ocr = pytesseract.image_to_string(text_mask, config='--psm 6').strip()
+    ocr = pytesseract.image_to_string(text_mask, config='-c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz()\'" --psm 6 --user-words "C:\\Users\\andyw\\Documents\\Python Scripts\\IncursionReader\\TessConfig\\eng.user-words" --user-patterns "C:\\Users\\andyw\\Documents\\Python Scripts\\IncursionReader\\TessConfig\\eng.user-patterns"').strip()
     output = post_ocr_correction(ocr)
-    return post_ocr_correction(ocr)
+
+    if output == '':
+        plt.imshow(text_mask)
+        plt.show()
+
+    return output
 
 
 def connection_present(connection_hsv):
