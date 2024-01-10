@@ -27,18 +27,6 @@ ALVA_OPENING_INCURSION_QUOTES = [
 ALVA_FINISHED_INCURSION_QUOTE = r"Alva, Master Explorer: Good job, exile."
 
 
-def crop_to_incursion_menu(image):
-    """
-    Function assumes that the Incursion menu takes up the same amount of relative space regardless of the image resolution.
-    Crops based on hand-picked constants from 1440p resolution.
-    """
-    top_crop = floor(MENU_TOP_PERCENTAGE * image.shape[0])
-    bottom_crop = ceil(MENU_BOTTOM_PERCENTAGE * image.shape[0])
-    left_crop = floor(MENU_LEFT_PERCENTAGE * image.shape[1])
-    right_crop = ceil(MENU_RIGHT_PERCENTAGE * image.shape[1])
-    return image[top_crop:bottom_crop, left_crop:right_crop]
-
-
 class IncursionApp():
     def __init__(self):
         # Need to read from a config file
@@ -106,7 +94,6 @@ if __name__ == '__main__':
     #     print(filename, count)
     #     path_to_image = path.join(folder_dir, filename)
     #     image = cv2.imread(path_to_image)[..., ::-1] # RGB
-    #     image = crop_to_incursion_menu(image)
     #     hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     #     test = Temple(hsv_image)
     #     # print(test)
