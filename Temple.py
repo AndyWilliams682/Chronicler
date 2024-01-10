@@ -98,13 +98,12 @@ class Temple():
             room_slice = ROOMS_PER_LAYER[room_layer] - round((x - layer_leftmost_x) / layer_room_w) - 1 + (room_layer == 0)
             room_slot = f'{room_layer}F{room_slice}'
             
-            room_name = vision.read_room_text(hsv_temple_menu[y:y+h, x:x+w])
+            room_name = vision.read_room_text(hsv_temple_menu[y+round(0.4 * h):y+h, x:x+w])
 
             # Catching OCR issues
             if room_name not in ROOM_DATA.keys():
-                print('Something went wrong!', [output])
-                plt.imshow(text_mask, cmap='gray')
-                plt.show()
+                print('Something went wrong!', [room_name])
+                vision.read_room_text(hsv_temple_menu[y+round(0.4 * h):y+h, x:x+w], debug=True)
             
             abbreviation = get_room_abbreviation(room_name)
             self.room_map[room_slot] = abbreviation
