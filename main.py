@@ -63,8 +63,8 @@ class IncursionApp():
         """
         while True: # Replace with reading the last line of the file for Alva End quote?
             if kb.is_pressed(self.incursion_keybind):
-                time.sleep(0.25)
-                monitor = self.sct.monitors[2]
+                time.sleep(0.25) # Faster time? How long until window appears?
+                monitor = self.sct.monitors[1] # Replace with proper way to get the game window
                 screenshot = np.array(self.sct.grab(monitor))[..., :-1] # Remove alpha channel
                 screenshot = screenshot[..., ::-1] # BGR to RGB
                 screenshot = crop_to_incursion_menu(screenshot)
@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     # Batch testing
     # count = 0
-    # folder_dir = r'Images\Spencer'
+    # folder_dir = r'Images\UncompressedSteam'
     # for filename in listdir(folder_dir):
     #     count += 1
     #     print(filename, count)
