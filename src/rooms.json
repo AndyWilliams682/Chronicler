@@ -1,11 +1,11 @@
 {
     "ANTECHAMBER": { "Theme": "aa", "Tier": 0 },
-    "APEX OF ATZOATL": { "Theme": "AP", "Tier": "X" },
+    "APEX OF ATZOATL": { "Theme": "APX", "Tier": 0 },
     "BANQUET HALL": { "Theme": "bb", "Tier": 0 },
     "CELLAR": { "Theme": "cc", "Tier": 0 },
     "CHASM": { "Theme": "dd", "Tier": 0 },
     "CLOISTER": { "Theme": "ee", "Tier": 0 },
-    "ENTRANCE": { "Theme": "EN", "Tier": "T" },
+    "ENTRANCE": { "Theme": "ENT", "Tier": 0 },
     "HALLS": { "Theme": "ff", "Tier": 0 },
     "PASSAGEWAYS": { "Theme": "gg", "Tier": 0 },
     "PITS": { "Theme": "hh", "Tier": 0 },

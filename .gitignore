@@ -2,5 +2,6 @@
 /Images
 /.vscode
 /.venv
-/__pycache__
+**/__pycache__/
 *.ods*
+.coverage
