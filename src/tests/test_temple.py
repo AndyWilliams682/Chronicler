@@ -53,7 +53,8 @@ def test_update_slot_from_vision_output(temple):
 
 def test_make_decisions(temple):
     output = temple.make_decisions()
-    assert output == (Room("TS", 1), False, [Slot(1, 1), Slot(1, 2)])
+    print(output)
+    assert output == (False, True, False, ["CHASM", "PITS"], 83)
 
 
 def test_calc_minimum_area_level_for_max(temple):
