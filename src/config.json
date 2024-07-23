@@ -1,0 +1,114 @@
+{
+    "settings": {
+        "language": "english",
+        "client_txt_path": "C:/Program Files (x86)/Steam/steamapps/common/Path of Exile/logs/client.txt",
+        "show_tips": true,
+        "screenshot_method_manual": true,
+        "screenshot_key": "tab",
+        "immersive_ui": true,
+        "show_settings_on_startup": true,
+        "rooms": {
+            "Apex of Atzoatl": true,
+            "Locus of Corruption": true,
+            "Doryani's Institute": true,
+            "Apex of Ascension": false,
+            "Chamber of Iron": false,
+            "Glittering Halls": false,
+            "Hall of War": false,
+            "Hybridisation Chamber": false,
+            "Wealth of the Vaal": false,
+            "Sanctum of Immortality": false,
+            "Shrine of Unmaking": false,
+            "Factory": false,
+            "Museum Of Artefacts": false,
+            "Defense Research Lab": false,
+            "Hall of Legends": false,
+            "Crucible of Flame": false,
+            "Temple Nexus": false,
+            "Toxic Grove": false,
+            "Hall of Champions": false,
+            "Storm of Corruption": false,
+            "Sadist's Den": false,
+            "Atlas of Worlds": false,
+            "Throne of Atziri": false,
+            "Conduit of Lightning": false,
+            "Court of Sealed Death": false,
+            "House of the Others": false
+        }
+    },
+    "image_params": {
+        "room_details": {
+            "room_width": 229,
+            "room_height": 112,
+            "horizontal_gap": 54,
+            "vertical_gap": 29
+        },
+        "slots_to_xy": {
+            "0F2": {
+                "x": 1166,
+                "y": 896
+            },
+            "0F1": {
+                "x": 1448,
+                "y": 868
+            },
+            "0F3": {
+                "x": 883,
+                "y": 868
+            },
+            "1F1": {
+                "x": 1312,
+                "y": 728
+            },
+            "1F0": {
+                "x": 1589,
+                "y": 729
+            },
+            "1F2": {
+                "x": 1024,
+                "y": 729
+            },
+            "1F3": {
+                "x": 741,
+                "y": 729
+            },
+            "2F0": {
+                "x": 1448,
+                "y": 589
+            },
+            "2F1": {
+                "x": 1166,
+                "y": 589
+            },
+            "2F2": {
+                "x": 883,
+                "y": 589
+            },
+            "3F0": {
+                "x": 1307,
+                "y": 450
+            },
+            "3F1": {
+                "x": 1024,
+                "y": 450
+            },
+            "4F0": {
+                "x": 1166,
+                "y": 309
+            }
+        },
+        "incursion_menu_rect": {
+            "x": 1563,
+            "y": 56,
+            "w": 648,
+            "h": 506
+        },
+        "incursions_remaining_rect": {
+            "x": 1112,
+            "y": 1014,
+            "w": 337,
+            "h": 112
+        },
+        "cached": 1
+    }
+}
