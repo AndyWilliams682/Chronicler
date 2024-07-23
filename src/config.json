@@ -4,7 +4,7 @@
         "client_txt_path": "C:/Program Files (x86)/Steam/steamapps/common/Path of Exile/logs/client.txt",
         "show_tips": true,
         "screenshot_method_manual": true,
-        "screenshot_key": "tab",
+        "screenshot_key": "v",
         "immersive_ui": true,
         "show_settings_on_startup": true,
         "rooms": {
@@ -38,77 +38,77 @@
     },
     "image_params": {
         "room_details": {
-            "room_width": 229,
-            "room_height": 112,
-            "horizontal_gap": 54,
-            "vertical_gap": 29
+            "room_width": 0,
+            "room_height": 0,
+            "horizontal_gap": 0,
+            "vertical_gap": 0
         },
         "slots_to_xy": {
             "0F2": {
-                "x": 1166,
-                "y": 896
+                "x": 0,
+                "y": 0
             },
             "0F1": {
-                "x": 1448,
-                "y": 868
+                "x": 0,
+                "y": 0
             },
             "0F3": {
-                "x": 883,
-                "y": 868
+                "x": 0,
+                "y": 0
             },
             "1F1": {
-                "x": 1312,
-                "y": 728
+                "x": 0,
+                "y": 0
             },
             "1F0": {
-                "x": 1589,
-                "y": 729
+                "x": 0,
+                "y": 0
             },
             "1F2": {
-                "x": 1024,
-                "y": 729
+                "x": 0,
+                "y": 0
             },
             "1F3": {
-                "x": 741,
-                "y": 729
+                "x": 0,
+                "y": 0
             },
             "2F0": {
-                "x": 1448,
-                "y": 589
+                "x": 0,
+                "y": 0
             },
             "2F1": {
-                "x": 1166,
-                "y": 589
+                "x": 0,
+                "y": 0
             },
             "2F2": {
-                "x": 883,
-                "y": 589
+                "x": 0,
+                "y": 0
             },
             "3F0": {
-                "x": 1307,
-                "y": 450
+                "x": 0,
+                "y": 0
             },
             "3F1": {
-                "x": 1024,
-                "y": 450
+                "x": 0,
+                "y": 0
             },
             "4F0": {
-                "x": 1166,
-                "y": 309
+                "x": 0,
+                "y": 0
             }
         },
         "incursion_menu_rect": {
-            "x": 1563,
-            "y": 56,
-            "w": 648,
-            "h": 506
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
         },
         "incursions_remaining_rect": {
-            "x": 1112,
-            "y": 1014,
-            "w": 337,
-            "h": 112
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
         },
-        "cached": 1
+        "cached": 0
     }
 }
