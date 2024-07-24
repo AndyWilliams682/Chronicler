@@ -12,6 +12,8 @@ import threading
 import json
 import pygetwindow as gw
 import random
+import pytesseract
+import os
 
 from temple import Temple
 from vision import process_screenshot
@@ -19,8 +21,6 @@ from constants import ROOM_DATA, ARCHITECTS
 from decisions import TIE_BREAKERS
 from slot import Slot
 
-
-CLIENT_TXT = r'C:\Program Files (x86)\Steam\steamapps\common\Path of Exile\logs\Client.txt'
 
 IMMERSIVE_BG = "#17120f"
 IMMERSIVE_FG = "#cc9053"
@@ -48,19 +48,24 @@ class IncursionApp():
         self.open_incursion = False
         self.previous_incursion = None
         self.show_settings_in_hideout = tk.BooleanVar(value=False)
+        self.thread_running = False
 
         kb.add_hotkey(self.config["settings"]["screenshot_key"], self.screenshot_keybind_pressed)
         self.program_data = load_program_data(self.config["settings"]["language"])
+        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_path"]
         
         if self.config["settings"]["show_settings_on_startup"]:
             self.create_settings_frame()
         
     def run(self):
-        self.thread_running = True
-        self.backend_thread = threading.Thread(target=self.watch_client_txt)
-        self.backend_thread.start()
-
+        self.start_backend_thread()
         self.root.mainloop()
+    
+    def start_backend_thread(self):
+        if self.config["settings"]["client_txt_path"] != "":
+            self.thread_running = True
+            self.backend_thread = threading.Thread(target=self.watch_client_txt)
+            self.backend_thread.start()
     
     def configure_root(self):
         self.root = tk.Tk()
@@ -93,7 +98,10 @@ class IncursionApp():
         language_dropdown.grid(row=0, columnspan=2)
 
         path_to_client_txt_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_client_txt_text"], command=self.select_client_txt_path)
-        path_to_client_txt_button.grid(row=1, columnspan=2)
+        path_to_client_txt_button.grid(row=1, column=0)
+
+        path_to_tesseract_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_tesseract_text"], command=self.select_tesseract_path)
+        path_to_tesseract_button.grid(row=1, column=1)
 
         screenshot_method_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["screenshot_method_text"], variable=self.ui_vars["screenshot_method_manual"], onvalue=1, offvalue=0)
         screenshot_method_checkbox.grid(row=2, columnspan=2)
@@ -124,9 +132,13 @@ class IncursionApp():
         if validate_settings(settings) is False:
             return
         
+        if self.thread_running is False:
+            self.start_backend_thread()
+        
         kb.remove_hotkey(self.config["settings"]["screenshot_key"])
         self.config["settings"] = settings
         kb.add_hotkey(self.config["settings"]["screenshot_key"], self.screenshot_keybind_pressed)
+        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_path"]
 
         room_settings = pd.Series(self.config["settings"]["rooms"])
         room_settings.index = room_settings.index.str.upper()
@@ -150,6 +162,9 @@ class IncursionApp():
     
     def select_client_txt_path(self):
         self.ui_vars["client_txt_path"].set(fd.askdirectory(mustexist=True) + "/client.txt")
+    
+    def select_tesseract_path(self):
+        self.ui_vars["tesseract_path"].set(fd.askdirectory(mustexist=True) + "/tesseract.exe")
     
     def set_keybind_label(self):
         keybind = kb.read_hotkey()
@@ -338,10 +353,15 @@ def convert_vars_to_settings(incoming_vars):
 def validate_settings(settings):
     if settings["language"] == "language":
         return False
+    
+    if not os.path.exists(settings["client_txt_path"]):
+        return False
+    
+    if not os.path.exists(settings["tesseract_exe_path"]):
+        return False
    
     try:
         kb.parse_hotkey(settings["screenshot_key"])
-
     except ValueError:
         return False
 

@@ -25,6 +25,7 @@
         "ui_labels": {
             "room_settings_text": "Select which rooms to prioritize (less rooms is preferred)",
             "path_to_client_txt_text": "Update path to client.txt",
+            "path_to_tesseract_text": "Update path to tesseract.exe",
             "screenshot_method_text": "Manual Screenshot Mode",
             "screenshot_key_text": "Incursion Menu / Manual Screenshot Key",
             "show_tips_text": "Show tips",
