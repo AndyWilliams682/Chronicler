@@ -27,7 +27,7 @@
             "path_to_client_txt_text": "Update path to client.txt",
             "path_to_tesseract_text": "Update path to tesseract.exe",
             "screenshot_method_text": "Manual Screenshot Mode",
-            "screenshot_key_text": "Incursion Menu / Manual Screenshot Key",
+            "screenshot_keybind_text": "Incursion Menu / Manual Screenshot Key",
             "show_tips_text": "Show tips",
             "settings_startup_text": "Show settings on startup",
             "save_and_close_text": "Save and close",

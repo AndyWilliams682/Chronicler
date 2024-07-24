@@ -50,9 +50,9 @@ class IncursionApp():
         self.show_settings_in_hideout = tk.BooleanVar(value=False)
         self.thread_running = False
 
-        kb.add_hotkey(self.config["settings"]["screenshot_key"], self.screenshot_keybind_pressed)
+        kb.add_hotkey(self.config["settings"]["screenshot_keybind"], self.screenshot_keybind_pressed)
         self.program_data = load_program_data(self.config["settings"]["language"])
-        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_path"]
+        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_exe_path"]
         
         if self.config["settings"]["show_settings_on_startup"]:
             self.create_settings_frame()
@@ -100,17 +100,17 @@ class IncursionApp():
         path_to_client_txt_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_client_txt_text"], command=self.select_client_txt_path)
         path_to_client_txt_button.grid(row=1, column=0)
 
-        path_to_tesseract_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_tesseract_text"], command=self.select_tesseract_path)
+        path_to_tesseract_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_tesseract_text"], command=self.select_tesseract_exe_path)
         path_to_tesseract_button.grid(row=1, column=1)
 
-        screenshot_method_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["screenshot_method_text"], variable=self.ui_vars["screenshot_method_manual"], onvalue=1, offvalue=0)
+        screenshot_method_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["screenshot_method_text"], variable=self.ui_vars["screenshot_method_is_manual"], onvalue=1, offvalue=0)
         screenshot_method_checkbox.grid(row=2, columnspan=2)
 
-        screenshot_key_label = tk.Label(master=config_frame, text=self.program_data["ui_labels"]["screenshot_key_text"])
-        screenshot_key_label.grid(row=3, columnspan=2)
+        screenshot_keybind_label = tk.Label(master=config_frame, text=self.program_data["ui_labels"]["screenshot_keybind_text"])
+        screenshot_keybind_label.grid(row=3, columnspan=2)
 
-        self.screenshot_key_button = tk.Button(master=config_frame, text=self.ui_vars["screenshot_key"].get(), command=self.set_keybind_label)
-        self.screenshot_key_button.grid(row=4, columnspan=2)
+        self.screenshot_keybind_button = tk.Button(master=config_frame, text=self.ui_vars["screenshot_keybind"].get(), command=self.set_keybind_label)
+        self.screenshot_keybind_button.grid(row=4, columnspan=2)
 
         show_tips_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["show_tips_text"], variable=self.ui_vars["show_tips"], onvalue=1, offvalue=0)
         show_tips_checkbox.grid(row=5, columnspan=2)
@@ -135,10 +135,10 @@ class IncursionApp():
         if self.thread_running is False:
             self.start_backend_thread()
         
-        kb.remove_hotkey(self.config["settings"]["screenshot_key"])
+        kb.remove_hotkey(self.config["settings"]["screenshot_keybind"])
         self.config["settings"] = settings
-        kb.add_hotkey(self.config["settings"]["screenshot_key"], self.screenshot_keybind_pressed)
-        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_path"]
+        kb.add_hotkey(self.config["settings"]["screenshot_keybind"], self.screenshot_keybind_pressed)
+        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_exe_path"]
 
         room_settings = pd.Series(self.config["settings"]["rooms"])
         room_settings.index = room_settings.index.str.upper()
@@ -163,14 +163,14 @@ class IncursionApp():
     def select_client_txt_path(self):
         self.ui_vars["client_txt_path"].set(fd.askdirectory(mustexist=True) + "/client.txt")
     
-    def select_tesseract_path(self):
-        self.ui_vars["tesseract_path"].set(fd.askdirectory(mustexist=True) + "/tesseract.exe")
+    def select_tesseract_exe_path(self):
+        self.ui_vars["tesseract_exe_path"].set(fd.askdirectory(mustexist=True) + "/tesseract.exe")
     
     def set_keybind_label(self):
         keybind = kb.read_hotkey()
         kb.stash_state()
-        self.screenshot_key_button.config(text=keybind)
-        self.ui_vars["screenshot_key"].set(keybind)
+        self.screenshot_keybind_button.config(text=keybind)
+        self.ui_vars["screenshot_keybind"].set(keybind)
     
     def create_temple_frame(self, choose_left, choose_swap, leave_early, rooms_to_connect, map_area_level):
         self.label_bg = BG_OPTIONS[self.config["settings"]["immersive_ui"]]
@@ -303,7 +303,7 @@ class IncursionApp():
         self.f = None # Does this need to be self?
     
     def screenshot_keybind_pressed(self):
-        if self.config["settings"]["screenshot_method_manual"] or self.open_incursion:
+        if self.config["settings"]["screenshot_method_is_manual"] or self.open_incursion:
             self.take_screenshot()
     
     def take_screenshot(self):
@@ -361,7 +361,7 @@ def validate_settings(settings):
         return False
    
     try:
-        kb.parse_hotkey(settings["screenshot_key"])
+        kb.parse_hotkey(settings["screenshot_keybind"])
     except ValueError:
         return False
 
