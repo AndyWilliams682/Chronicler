@@ -1,8 +1,9 @@
 {
     "settings": {
+        "cached": false,
         "language": "english",
-        "client_txt_path": "C:/Program Files (x86)/Steam/steamapps/common/Path of Exile/logs/client.txt",
-        "tesseract_exe_path": "C:/Program Files/Tesseract-OCR/tesseract.exe",
+        "client_txt_path": "",
+        "tesseract_exe_path": "",
         "show_tips": true,
         "screenshot_method_is_manual": true,
         "screenshot_keybind": "tab",

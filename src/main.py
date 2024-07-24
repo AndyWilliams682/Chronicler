@@ -20,6 +20,7 @@ from src.vision import process_screenshot
 from src.constants import ROOM_DATA, ARCHITECTS
 from src.decisions import TIE_BREAKERS
 from src.slot import Slot
+from src.data import Settings
 
 
 IMMERSIVE_BG = "#17120f"
@@ -40,9 +41,11 @@ class IncursionApp():
         with open(r"src\config.json") as f:
             self.config = json.load(f)
         
+        self.settings = Settings.from_dict(self.config["settings"])
+        
         # Get poe window info here
         self.configure_root()
-        self.ui_vars = convert_settings_to_vars(self.config["settings"])
+        self.ui_vars = self.settings.to_tk_vars()
 
         self.last_file_change = None
         self.open_incursion = False
@@ -50,11 +53,11 @@ class IncursionApp():
         self.show_settings_in_hideout = tk.BooleanVar(value=False)
         self.thread_running = False
 
-        kb.add_hotkey(self.config["settings"]["screenshot_keybind"], self.screenshot_keybind_pressed)
-        self.program_data = load_program_data(self.config["settings"]["language"])
-        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_exe_path"]
+        kb.add_hotkey(self.settings.screenshot_keybind, self.screenshot_keybind_pressed)
+        self.program_data = load_program_data(self.settings.language)
+        pytesseract.pytesseract.tesseract_cmd = self.settings.tesseract_exe_path
         
-        if self.config["settings"]["show_settings_on_startup"]:
+        if self.settings.show_settings_on_startup:
             self.create_settings_frame()
         
     def run(self):
@@ -62,7 +65,7 @@ class IncursionApp():
         self.root.mainloop()
     
     def start_backend_thread(self):
-        if self.config["settings"]["client_txt_path"] != "":
+        if self.settings.client_txt_path != "":
             self.thread_running = True
             self.backend_thread = threading.Thread(target=self.watch_client_txt)
             self.backend_thread.start()
@@ -121,45 +124,49 @@ class IncursionApp():
         show_settings_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["settings_startup_text"], variable=self.ui_vars["show_settings_on_startup"], onvalue=1, offvalue=0)
         show_settings_checkbox.grid(row=7, columnspan=2)
 
-        save_and_close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["save_and_close_text"], command = self.save_and_close_settings)
+        save_and_close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["save_and_close_text"], command = self.save_and_close_settings_frame)
         save_and_close_settings_button.grid(row=8, column=0)
 
-        close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["close_text"], command = self.close_settings)
+        close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["close_text"], command = self.close_settings_frame)
         close_settings_button.grid(row=8, column=1)
 
         self.frame.pack()
         self.root.deiconify()
     
-    def save_and_close_settings(self):
-        settings = convert_vars_to_settings(self.ui_vars)
-        if validate_settings(settings) is False:
+    def save_and_close_settings_frame(self):
+        try:
+            old_keybind = self.settings.screenshot_keybind
+            self.settings = Settings.from_tk_vars(self.ui_vars)
+        except ValueError:
             return
+        
+        self.settings.cached = True
         
         if self.thread_running is False:
             self.start_backend_thread()
         
-        kb.remove_hotkey(self.config["settings"]["screenshot_keybind"])
-        self.config["settings"] = settings
-        kb.add_hotkey(self.config["settings"]["screenshot_keybind"], self.screenshot_keybind_pressed)
-        pytesseract.pytesseract.tesseract_cmd = self.config["settings"]["tesseract_exe_path"]
+        kb.remove_hotkey(old_keybind)
+        kb.add_hotkey(self.settings.screenshot_keybind, self.screenshot_keybind_pressed)
+        pytesseract.pytesseract.tesseract_cmd = self.settings.tesseract_exe_path
 
-        room_settings = pd.Series(self.config["settings"]["rooms"])
+        room_settings = pd.Series(self.settings.rooms)
         room_settings.index = room_settings.index.str.upper()
         ROOM_DATA["Valuable"] = room_settings
         with pd.option_context("future.no_silent_downcasting", True):
             ROOM_DATA["Valuable"] = ROOM_DATA["Valuable"].fillna(False).astype(bool)
             ARCHITECTS["Valuable"] = ROOM_DATA[["Theme", "Valuable"]][ROOM_DATA["Tier"] == 3].set_index("Theme")
         
-        if TIE_BREAKERS[Slot(0, 4)] > 100 and self.config["settings"]["rooms"]["Apex of Atzoatl"]:
+        if TIE_BREAKERS[Slot(0, 4)] > 100 and self.settings.rooms["Apex of Atzoatl"]:
             TIE_BREAKERS[Slot(0, 4)] -= 100
-        elif TIE_BREAKERS[Slot(0, 4)] < 100 and not self.config["settings"]["rooms"]["Apex of Atzoatl"]:
+        elif TIE_BREAKERS[Slot(0, 4)] < 100 and not self.settings.rooms["Apex of Atzoatl"]:
             TIE_BREAKERS[Slot(0, 4)] += 100
 
+        self.config["settings"] = self.settings.__dict__
         save_config(self.config)
-        self.program_data = load_program_data(self.config["settings"]["language"])
-        self.close_settings()
+        self.program_data = load_program_data(self.settings.language)
+        self.close_settings_frame()
     
-    def close_settings(self):
+    def close_settings_frame(self):
         self.frame.forget()
         self.root.withdraw()
     
@@ -176,8 +183,8 @@ class IncursionApp():
         self.ui_vars["screenshot_keybind"].set(keybind)
     
     def create_temple_frame(self, choose_left, choose_swap, leave_early, rooms_to_connect, map_area_level):
-        self.label_bg = BG_OPTIONS[self.config["settings"]["immersive_ui"]]
-        self.label_fg = FG_OPTIONS[self.config["settings"]["immersive_ui"]]
+        self.label_bg = BG_OPTIONS[self.settings.immersive_ui]
+        self.label_fg = FG_OPTIONS[self.settings.immersive_ui]
 
         self.root.geometry("")
         # need to add poe_window x, y, w, h to params. Need to use a library to get the window.
@@ -187,7 +194,7 @@ class IncursionApp():
         self.frame.bind("<Button>", self.exit_temple_frame) # TODO: Figure out how to close the overlay upon any interaction that closes the V menu
 
         self.add_incursion_choice_label(choose_left, choose_swap)
-        if self.config["settings"]["show_tips"]:
+        if self.settings.show_tips:
             self.add_tip_label()
         self.add_leave_door_label(leave_early, rooms_to_connect, map_area_level)
         self.add_metrics_frame()
@@ -268,8 +275,9 @@ class IncursionApp():
         hideout_settings_checkbox.pack()
     
     def exit_program(self):
-        self.thread_running = False
-        self.backend_thread.join()
+        if self.thread_running is True:
+            self.thread_running = False
+            self.backend_thread.join()
         self.root.destroy()
 
     def exit_temple_frame(self, event):
@@ -283,7 +291,7 @@ class IncursionApp():
         Monitoring client.txt for any changes
         """
         while self.thread_running:
-            latest_change = stat(self.config["settings"]["client_txt_path"]).st_mtime
+            latest_change = stat(self.settings.client_txt_path).st_mtime
             if self.last_file_change != latest_change:
                 self.last_file_change = latest_change
                 self.read_client_txt()
@@ -292,7 +300,7 @@ class IncursionApp():
         """
         Reading client.txt to check for Alva opening/finishing an Incursion.
         """
-        with open(self.config["settings"]["client_txt_path"], 'rb') as self.f:
+        with open(self.settings.client_txt_path, 'rb') as self.f:
             last_line = str(self.f.readlines()[-1])
             # May break if Client.txt does not track datetime with the setting turned off
             if any(quote in last_line for quote in self.program_data["alva_opening_incursion_quotes"]) and last_line.count(':') == 3:
@@ -306,7 +314,7 @@ class IncursionApp():
         self.f = None # Does this need to be self?
     
     def screenshot_keybind_pressed(self):
-        if self.config["settings"]["screenshot_method_is_manual"] or self.open_incursion:
+        if self.settings.screenshot_method_is_manual or self.open_incursion:
             self.take_screenshot()
     
     def take_screenshot(self):
@@ -328,47 +336,6 @@ class IncursionApp():
             # Assume temple screen is not open
             pass
 
-
-def convert_settings_to_vars(incoming_settings):
-    outgoing_vars = {}
-    var_types = {bool: tk.BooleanVar, str: tk.StringVar}
-    for key, value in incoming_settings.items():
-        if key == "rooms": # Another depth here
-            outgoing_vars["rooms"] = {}
-            for room, valuable in value.items():
-                outgoing_vars["rooms"][room] = tk.BooleanVar(value=valuable)
-            continue
-        outgoing_vars[key] = var_types[type(value)](value=value)
-    return outgoing_vars
-
-
-def convert_vars_to_settings(incoming_vars):
-    outgoing_settings = {}
-    for key, value in incoming_vars.items():
-        if key == "rooms":
-            outgoing_settings["rooms"] = {}
-            for room, valuable in value.items():
-                outgoing_settings["rooms"][room] = valuable.get()
-            continue
-        outgoing_settings[key] = value.get()
-    return outgoing_settings
-
-def validate_settings(settings):
-    if settings["language"] == "language":
-        return False
-    
-    if not os.path.exists(settings["client_txt_path"]):
-        return False
-    
-    if not os.path.exists(settings["tesseract_exe_path"]):
-        return False
-   
-    try:
-        kb.parse_hotkey(settings["screenshot_keybind"])
-    except ValueError:
-        return False
-
-    return True
 
 def save_config(config):
     with open(r'src\config.json', 'w') as f:
