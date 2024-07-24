@@ -2,10 +2,10 @@
     "settings": {
         "language": "english",
         "client_txt_path": "C:/Program Files (x86)/Steam/steamapps/common/Path of Exile/logs/client.txt",
-        "tesseract_path": "C:/Program Files/Tesseract-OCR/tesseract.exe",
+        "tesseract_exe_path": "C:/Program Files/Tesseract-OCR/tesseract.exe",
         "show_tips": true,
-        "screenshot_method_manual": true,
-        "screenshot_key": "tab",
+        "screenshot_method_is_manual": true,
+        "screenshot_keybind": "tab",
         "immersive_ui": true,
         "show_settings_on_startup": true,
         "rooms": {
