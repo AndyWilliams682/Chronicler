@@ -94,35 +94,38 @@ class IncursionApp():
         config_frame = tk.Frame(master=self.frame)
         config_frame.grid(row=0, column=0)
 
+        exit_button = tk.Button(master=config_frame, text="EXIT PROGRAM", command=self.exit_program)
+        exit_button.grid(row=0, column=0, sticky="w")
+
         language_dropdown = tk.OptionMenu(config_frame, self.ui_vars["language"], *SUPPORTED_LANGUAGES)
-        language_dropdown.grid(row=0, columnspan=2)
+        language_dropdown.grid(row=1, columnspan=2)
 
         path_to_client_txt_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_client_txt_text"], command=self.select_client_txt_path)
-        path_to_client_txt_button.grid(row=1, column=0)
+        path_to_client_txt_button.grid(row=2, column=0)
 
         path_to_tesseract_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["path_to_tesseract_text"], command=self.select_tesseract_exe_path)
-        path_to_tesseract_button.grid(row=1, column=1)
+        path_to_tesseract_button.grid(row=2, column=1)
 
         screenshot_method_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["screenshot_method_text"], variable=self.ui_vars["screenshot_method_is_manual"], onvalue=1, offvalue=0)
-        screenshot_method_checkbox.grid(row=2, columnspan=2)
+        screenshot_method_checkbox.grid(row=3, columnspan=2)
 
         screenshot_keybind_label = tk.Label(master=config_frame, text=self.program_data["ui_labels"]["screenshot_keybind_text"])
-        screenshot_keybind_label.grid(row=3, columnspan=2)
+        screenshot_keybind_label.grid(row=4, columnspan=2)
 
         self.screenshot_keybind_button = tk.Button(master=config_frame, text=self.ui_vars["screenshot_keybind"].get(), command=self.set_keybind_label)
-        self.screenshot_keybind_button.grid(row=4, columnspan=2)
+        self.screenshot_keybind_button.grid(row=5, columnspan=2)
 
         show_tips_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["show_tips_text"], variable=self.ui_vars["show_tips"], onvalue=1, offvalue=0)
-        show_tips_checkbox.grid(row=5, columnspan=2)
+        show_tips_checkbox.grid(row=6, columnspan=2)
 
         show_settings_checkbox = tk.Checkbutton(master=config_frame, text=self.program_data["ui_labels"]["settings_startup_text"], variable=self.ui_vars["show_settings_on_startup"], onvalue=1, offvalue=0)
-        show_settings_checkbox.grid(row=6, columnspan=2)
+        show_settings_checkbox.grid(row=7, columnspan=2)
 
         save_and_close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["save_and_close_text"], command = self.save_and_close_settings)
-        save_and_close_settings_button.grid(row=7, column=0)
+        save_and_close_settings_button.grid(row=8, column=0)
 
         close_settings_button = tk.Button(master=config_frame, text=self.program_data["ui_labels"]["close_text"], command = self.close_settings)
-        close_settings_button.grid(row=7, column=1)
+        close_settings_button.grid(row=8, column=1)
 
         self.frame.pack()
         self.root.deiconify()
