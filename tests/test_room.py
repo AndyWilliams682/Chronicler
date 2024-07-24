@@ -1,6 +1,6 @@
 import pytest
 
-from room import Room
+from src.room import Room
 
 
 def test_from_abbreviation():

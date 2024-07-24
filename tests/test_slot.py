@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from slot import Slot, chronicle_key
+from src.slot import Slot, chronicle_key
 
 
 def test_from_str():

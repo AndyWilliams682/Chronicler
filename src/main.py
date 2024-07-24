@@ -15,11 +15,11 @@ import random
 import pytesseract
 import os
 
-from temple import Temple
-from vision import process_screenshot
-from constants import ROOM_DATA, ARCHITECTS
-from decisions import TIE_BREAKERS
-from slot import Slot
+from src.temple import Temple
+from src.vision import process_screenshot
+from src.constants import ROOM_DATA, ARCHITECTS
+from src.decisions import TIE_BREAKERS
+from src.slot import Slot
 
 
 IMMERSIVE_BG = "#17120f"

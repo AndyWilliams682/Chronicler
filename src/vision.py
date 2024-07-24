@@ -7,14 +7,9 @@ import matplotlib.pyplot as plt
 import difflib
 import json
 
-from temple_layout import ROOMS_PER_LAYER
-from constants import ROOM_DATA
+from src.temple_layout import ROOMS_PER_LAYER
+from src.constants import ROOM_DATA
 
-
-PATH_TO_POPPLER_EXE = Path(r"C:\Program Files\poppler-0.68.0\bin")
-pytesseract.pytesseract.tesseract_cmd = (
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    )
 
 # Assumes a fixed range of colors for each of the room borders in the temple layout
 ROOM_BORDER_RANGES = {

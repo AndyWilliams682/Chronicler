@@ -1,8 +1,8 @@
 import pytest
 
-from temple_layout import TempleLayout
-from slot import Slot
-from room import Room
+from src.temple_layout import TempleLayout
+from src.slot import Slot
+from src.room import Room
 
 
 @pytest.fixture()

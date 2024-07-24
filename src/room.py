@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from random import randint
 
-from constants import ROOM_DATA
+from src.constants import ROOM_DATA
 
 
 @dataclass()

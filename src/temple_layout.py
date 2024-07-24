@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 from random import randint, shuffle
 
-from slot import Slot
-from room import Room
-from constants import ROOM_DATA, ARCHITECTS
+from src.slot import Slot
+from src.room import Room
+from src.constants import ROOM_DATA, ARCHITECTS
 
 
 # The temple has a fixed shape

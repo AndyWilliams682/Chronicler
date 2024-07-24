@@ -1,12 +1,15 @@
 import pytest
 import cv2
 
-from vision import *
+from src.vision import *
+
+DATA_DIR = Path(__file__).resolve().parent / "Images"
+pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 
 @pytest.fixture()
 def complete_test_image():
-    image = cv2.imread(r"src\tests\Images\CompleteTemple.png")[..., ::-1]
+    image = cv2.imread(DATA_DIR / "CompleteTemple.png")[..., ::-1]
     return cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
 
@@ -67,28 +70,28 @@ def test_read_image_using_saved_params_continuous(complete_test_image):
 
 
 def test_read_incursion_submenu():
-    menu_image = cv2.imread(r"src\tests\Images\Submenu.png")[..., ::-1]
+    menu_image = cv2.imread(DATA_DIR / "Submenu.png")[..., ::-1]
     menu_image = cv2.cvtColor(menu_image, cv2.COLOR_RGB2HSV)
     output = read_incursion_submenu(menu_image)
     assert output == {'left_option': 'POISON GARDEN', 'right_option': 'VAULT', 'room': 'PITS'}
 
 
 def test_read_incursions_remaining():
-    rem_image = cv2.imread(r"src\tests\Images\Remaining.png")[..., ::-1]
+    rem_image = cv2.imread(DATA_DIR / "Remaining.png")[..., ::-1]
     rem_image = cv2.cvtColor(rem_image, cv2.COLOR_RGB2HSV)
     output = read_incursions_remaining(rem_image)
     assert output == 1
 
 
 def test_read_room_text():
-    room_image = cv2.imread(r"src\tests\Images\Room.png")[..., ::-1]
+    room_image = cv2.imread(DATA_DIR / "Room.png")[..., ::-1]
     room_image = cv2.cvtColor(room_image, cv2.COLOR_RGB2HSV)
     output = read_room_text(room_image)
     assert output == "HALL OF HEROES"
 
 
 def test_connection_present():
-    connection_image = cv2.imread(r"src\tests\Images\Connection.png")[..., ::-1]
+    connection_image = cv2.imread(DATA_DIR / "Connection.png")[..., ::-1]
     connection_image = cv2.cvtColor(connection_image, cv2.COLOR_RGB2HSV)
     present_image = connection_image[1:29]
     not_present_image = connection_image[29:140]

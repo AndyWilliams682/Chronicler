@@ -1,7 +1,7 @@
 import numpy as np
 
-from temple import Temple
-from incursion import Incursion
+from src.temple import Temple
+from src.incursion import Incursion
 
 
 def simulate(temple: Temple):

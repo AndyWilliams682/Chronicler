@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from room import Room
+from src.room import Room
 
 
 @dataclass

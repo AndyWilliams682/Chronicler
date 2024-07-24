@@ -1,12 +1,12 @@
 import pandas as pd
 from math import ceil, floor
 
-from constants import ROOM_DATA, ARCHITECTS, SCARABS
-from temple_layout import TempleLayout
-from slot import chronicle_key
-from room import Room
-from incursion import Incursion
-from decisions import choose_incursion_room, choose_which_doors_to_open, choose_to_leave_map_early
+from src.constants import ROOM_DATA, ARCHITECTS, SCARABS
+from src.temple_layout import TempleLayout
+from src.slot import chronicle_key
+from src.room import Room
+from src.incursion import Incursion
+from src.decisions import choose_incursion_room, choose_which_doors_to_open, choose_to_leave_map_early
 
 
 class Temple:
