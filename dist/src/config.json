@@ -1,0 +1,156 @@
+{
+    "settings": {
+        "cached": false,
+        "language": "english",
+        "client_txt_path": "",
+        "tesseract_exe_path": "",
+        "show_tips": true,
+        "screenshot_method_is_manual": false,
+        "screenshot_keybind": "v",
+        "immersive_ui": true,
+        "show_settings_on_startup": true,
+        "rooms": {
+            "Apex of Atzoatl": true,
+            "Locus of Corruption": true,
+            "Doryani's Institute": true,
+            "Apex of Ascension": false,
+            "Chamber of Iron": false,
+            "Glittering Halls": false,
+            "Hall of War": false,
+            "Hybridisation Chamber": false,
+            "Wealth of the Vaal": false,
+            "Sanctum of Immortality": false,
+            "Shrine of Unmaking": false,
+            "Factory": false,
+            "Museum Of Artefacts": false,
+            "Defense Research Lab": false,
+            "Hall of Legends": false,
+            "Crucible of Flame": false,
+            "Temple Nexus": false,
+            "Toxic Grove": false,
+            "Hall of Champions": false,
+            "Storm of Corruption": false,
+            "Sadist's Den": false,
+            "Atlas of Worlds": false,
+            "Throne of Atziri": false,
+            "Conduit of Lightning": false,
+            "Court of Sealed Death": false,
+            "House of the Others": false
+        }
+    },
+    "image_params": {
+        "cached": false,
+        "room_details": {
+            "room_width": 0,
+            "room_height": 0,
+            "horizontal_gap": 0,
+            "vertical_gap": 0
+        },
+        "slots_to_xy": {
+            "0F2": {
+                "x": 0,
+                "y": 0
+            },
+            "0F1": {
+                "x": 0,
+                "y": 0
+            },
+            "0F3": {
+                "x": 0,
+                "y": 0
+            },
+            "1F0": {
+                "x": 0,
+                "y": 0
+            },
+            "1F1": {
+                "x": 0,
+                "y": 0
+            },
+            "1F2": {
+                "x": 0,
+                "y": 0
+            },
+            "1F3": {
+                "x": 0,
+                "y": 0
+            },
+            "2F0": {
+                "x": 0,
+                "y": 0
+            },
+            "2F1": {
+                "x": 0,
+                "y": 0
+            },
+            "2F2": {
+                "x": 0,
+                "y": 0
+            },
+            "3F0": {
+                "x": 0,
+                "y": 0
+            },
+            "3F1": {
+                "x": 0,
+                "y": 0
+            },
+            "4F0": {
+                "x": 0,
+                "y": 0
+            }
+        },
+        "incursion_menu_rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+        },
+        "incursions_remaining_rect": {
+            "x": 0,
+            "y": 0,
+            "w": 0,
+            "h": 0
+        }
+    },
+    "metrics": {
+        "total_incursion_time": 0,
+        "total_incursions": 0,
+        "average_incursion_time": 0,
+        "total_temples": 0,
+        "average_time_per_temple": 0,
+        "total_stones_used": 0,
+        "average_stones_per_temple": 0,
+        "resource_reallocation_tiers": 0,
+        "contested_development_tiers": 0,
+        "architect_appearances": {
+            "UN": 0,
+            "AR": 0,
+            "IR": 0,
+            "PS": 0,
+            "MN": 0,
+            "$$": 0,
+            "RG": 0,
+            "EX": 0,
+            "LF": 0,
+            "IT": 0,
+            "TR": 0,
+            "LG": 0,
+            "CR": 0,
+            "FR": 0,
+            "UP": 0,
+            "PP": 0,
+            "WP": 0,
+            "TM": 0,
+            "TS": 0,
+            "MP": 0,
+            "MM": 0,
+            "LN": 0,
+            "GM": 0,
+            "SB": 0,
+            "BR": 0
+        },
+        "new_doors": 0,
+        "new_tier_1_rooms": 0
+    }
+}
