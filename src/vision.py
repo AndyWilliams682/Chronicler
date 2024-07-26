@@ -9,6 +9,7 @@ import json
 
 from src.temple_layout import ROOMS_PER_LAYER
 from src.constants import ROOM_DATA
+from src.data import ImageParams
 
 
 # Assumes a fixed range of colors for each of the room borders in the temple layout
@@ -30,8 +31,25 @@ CONNECTION_RANGE = ((30, 43, 120), (30, 140, 255))
 
 TESS_CONFIG = '-c tessedit_char_whitelist="01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz"'
 
-with open(r"src\words.txt") as f:
-    WORDS = f.read().split('\n')
+WORDS = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+    'ANTECHAMBER', 'APEX OF ATZOATL', 'BANQUET HALL', 'CELLAR', 'CHASM', 'CLOISTER',
+    'ENTRANCE', 'HALLS', 'PASSAGEWAYS', 'PITS', 'TOMBS', 'TUNNELS', 'SACRIFICIAL CHAMBER',
+    'HALL OF OFFERINGS', 'APEX OF ASCENSION', "ARMOURER'S WORKSHOP", 'ARMOURY', 'CHAMBER OF IRON',
+    "JEWELLER'S WORKSHOP", 'JEWELLERY FORGE', 'GLITTERING HALLS', 'GUARDHOUSE', 'BARRACKS', 'HALL OF WAR',
+    'HATCHERY', 'AUTOMATON LAB', 'HYBRIDISATION CHAMBER', 'VAULT', 'TREASURY', 'WEALTH OF THE VAAL',
+    'POOLS OF RESTORATION', 'SANCTUM OF VITALITY', 'SANCTUM OF IMMORTALITY', 'EXPLOSIVES ROOM',
+    'DEMOLITION LAB', 'SHRINE OF UNMAKING', 'WORKSHOP', 'ENGINEERING DEPARTMENT', 'FACTORY',
+    'STORAGE ROOM', 'WAREHOUSES', 'MUSEUM OF ARTEFACTS', 'TRAP WORKSHOP', 'TEMPLE DEFENSE WORKSHOP',
+    'DEFENSE RESEARCH LAB', 'HALL OF METTLE', 'HALL OF HEROES', 'HALL OF LEGENDS', 'CORRUPTION CHAMBER',
+    'CATALYST OF CORRUPTION', 'LOCUS OF CORRUPTION', 'FLAME WORKSHOP', 'OMNITECT FORGE', 'CRUCIBLE OF FLAME',
+    'SHRINE OF EMPOWERMENT', 'SANCTUM OF UNITY', 'TEMPLE NEXUS', 'POISON GARDEN', 'CULTIVAR CHAMBER',
+    'TOXIC GROVE', 'SPARRING ROOM', 'ARENA OF VALOUR', 'HALL OF CHAMPIONS', 'TEMPEST GENERATOR',
+    'HURRICANE ENGINE', 'STORM OF CORRUPTION', 'TORMENT CELLS', 'TORTURE CAGES', "SADIST'S DEN",
+    "SURVEYOR'S STUDY", 'OFFICE OF CARTOGRAPHY', 'ATLAS OF WORLDS', 'ROYAL MEETING ROOM', 'HALL OF LORDS',
+    'THRONE OF ATZIRI', 'LIGHTNING WORKSHOP', 'OMNITECT REACTOR PLANT', 'CONDUIT OF LIGHTNING',
+    "GEMCUTTER'S WORKSHOP", 'DEPARTMENT OF THAUMATURGY', "DORYANI'S INSTITUTE", 'STRONGBOX CHAMBER',
+    'HALL OF LOCKS', 'COURT OF SEALED DEATH', 'SPLINTER RESEARCH LAB', 'BREACH CONTAINMENT CENTER', 'HOUSE OF THE OTHERS']
 
 
 def post_ocr_correction(raw_ocr):
@@ -51,7 +69,7 @@ def process_screenshot(screenshot, image_params, previous = None, attempts = 0):
     hsv_image = screenshot[..., ::-1] # BGR to RGB
     # screenshot = crop_to_incursion_menu(screenshot) # Don't think this is needed anymore
     hsv_image = cv2.cvtColor(hsv_image, cv2.COLOR_RGB2HSV)
-    if image_params["cached"] == 0 or attempts == 1:
+    if image_params.cached is False or attempts == 1:
         image_params = get_image_parameters(hsv_image)
     try: # If the cache fails for some reason
         return image_params, read_image_using_saved_params(hsv_image, image_params, previous)
@@ -158,22 +176,17 @@ def get_image_parameters(hsv_image):
     output["incursions_remaining_rect"]["w"] = 2 * horizontal_gap + average_room_width
     output["incursions_remaining_rect"]["h"] = average_room_height
 
-    output["cached"] = 1
+    output["cached"] = True
 
-    return output
-
-
-def reset_saved_params():
-    with open(r'src\image_params.json', 'w') as f:
-        json.dump({"cached": 0}, f, indent=4)
+    return ImageParams.from_dict(output)
 
 
 def read_image_using_saved_params(hsv_image, cache, previous = None):
     # TODO: Image may not contain this, what to do then?
-    remaining_x = cache["incursions_remaining_rect"]["x"]
-    remaining_y = cache["incursions_remaining_rect"]["y"]
-    remaining_w = cache["incursions_remaining_rect"]["w"]
-    remaining_h = cache["incursions_remaining_rect"]["h"]
+    remaining_x = cache.incursions_remaining_rect["x"]
+    remaining_y = cache.incursions_remaining_rect["y"]
+    remaining_w = cache.incursions_remaining_rect["w"]
+    remaining_h = cache.incursions_remaining_rect["h"]
     incursions_remaining_hsv = hsv_image[remaining_y:remaining_y + remaining_h, remaining_x:remaining_x + remaining_w]
     incursions_remaining = read_incursions_remaining(incursions_remaining_hsv)
     
@@ -182,28 +195,30 @@ def read_image_using_saved_params(hsv_image, cache, previous = None):
         continuous = (previous["remaining"] - incursions_remaining) == 1
 
     # TODO: What if the image doesn't have these?
-    incursion_x = cache["incursion_menu_rect"]["x"]
-    incursion_y = cache["incursion_menu_rect"]["y"]
-    incursion_w = cache["incursion_menu_rect"]["w"]
-    incursion_h = cache["incursion_menu_rect"]["h"]
+    incursion_x = cache.incursion_menu_rect["x"]
+    incursion_y = cache.incursion_menu_rect["y"]
+    incursion_w = cache.incursion_menu_rect["w"]
+    incursion_h = cache.incursion_menu_rect["h"]
     incursion_menu_hsv = hsv_image[incursion_y:incursion_y + incursion_h, incursion_x:incursion_x + incursion_w]
     incursion_data = read_incursion_submenu(incursion_menu_hsv)
 
-    average_room_width = cache["room_details"]["room_width"]
-    average_room_height = cache["room_details"]["room_height"]
-    horizontal_gap = cache["room_details"]["horizontal_gap"]
-    vertical_gap = cache["room_details"]["vertical_gap"]
+    average_room_width = cache.room_details["room_width"]
+    average_room_height = cache.room_details["room_height"]
+    horizontal_gap = cache.room_details["horizontal_gap"]
+    vertical_gap = cache.room_details["vertical_gap"]
     directions = {-1: "/", 0: "—", 1: "\\"}
     
     layout_data = {}
-    for slot in cache["slots_to_xy"]:
-        if continuous and slot != previous["slot"]:
+    for slot in cache.slots_to_xy:
+        if previous is not None:
+            print(previous, type(previous["slot"]))
+        if continuous and slot != str(previous["slot"]):
             continue
         layout_data[slot] = {"Name": None, "Connections": []}
         layer = int(slot[0])
         diag = int(slot[-1])
-        x = cache["slots_to_xy"][slot]["x"]
-        y = cache["slots_to_xy"][slot]["y"]
+        x = cache.slots_to_xy[slot]["x"]
+        y = cache.slots_to_xy[slot]["y"]
         room_image = hsv_image[y + round(0.4 * average_room_height):y + average_room_height, x:x + average_room_width]
         layout_data[slot]["Name"] = read_room_text(room_image)
         
@@ -372,73 +387,73 @@ def connection_present(connection_hsv):
     return 255 in connection_mask
 
 
-def shortcut(screenshot, slot):
-    with open(r"src\image_params.json") as f:
-        cache = json.load(f)
+# def shortcut(screenshot, slot):
+#     with open(r"src\image_params.json") as f:
+#         cache = json.load(f)
     
-    slot_data = {"Name": "", "Connections": []}
-    layer = int(slot[0])
-    diag = int(slot[-1])
-    directions = {-1: "/", 0: "—", 1: "\\"}
+#     slot_data = {"Name": "", "Connections": []}
+#     layer = int(slot[0])
+#     diag = int(slot[-1])
+#     directions = {-1: "/", 0: "—", 1: "\\"}
     
-    if screenshot.shape[-1] == 4: # Alpha channel present
-        screenshot = np.array(screenshot)[..., :-1] # Removing alpha channel
-    screenshot = screenshot[..., ::-1] # BGR to RGB
-    # screenshot = crop_to_incursion_menu(screenshot) # Don't think this is needed anymore
-    hsv_image = cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
-    # Need to make it read the room text and check connections twice and read the submenu and remaining
-    average_room_width = cache["room_details"]["room_width"]
-    average_room_height = cache["room_details"]["room_height"]
-    horizontal_gap = cache["room_details"]["horizontal_gap"]
-    vertical_gap = cache["room_details"]["vertical_gap"]
-    x = cache["slots_to_xy"][slot]["x"]
-    y = cache["slots_to_xy"][slot]["y"]
-    room_image = hsv_image[y + round(0.4 * average_room_height):y + average_room_height, x:x + average_room_width]
-    slot_data["Name"] = read_room_text(room_image)
+#     if screenshot.shape[-1] == 4: # Alpha channel present
+#         screenshot = np.array(screenshot)[..., :-1] # Removing alpha channel
+#     screenshot = screenshot[..., ::-1] # BGR to RGB
+#     # screenshot = crop_to_incursion_menu(screenshot) # Don't think this is needed anymore
+#     hsv_image = cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
+#     # Need to make it read the room text and check connections twice and read the submenu and remaining
+#     average_room_width = cache["room_details"]["room_width"]
+#     average_room_height = cache["room_details"]["room_height"]
+#     horizontal_gap = cache["room_details"]["horizontal_gap"]
+#     vertical_gap = cache["room_details"]["vertical_gap"]
+#     x = cache["slots_to_xy"][slot]["x"]
+#     y = cache["slots_to_xy"][slot]["y"]
+#     room_image = hsv_image[y + round(0.4 * average_room_height):y + average_room_height, x:x + average_room_width]
+#     slot_data["Name"] = read_room_text(room_image)
 
-    room_connection_hsv = hsv_image[y - vertical_gap:y + average_room_height + vertical_gap, x - horizontal_gap:x + round(average_room_width / 2)]
-    room_connection_hsv[vertical_gap:average_room_height + vertical_gap, horizontal_gap:round(average_room_width / 2) + horizontal_gap] = (0, 0, 0)
-    connection_ys = [0, vertical_gap, average_room_height + vertical_gap, average_room_height + 2 * vertical_gap]
-    direction = -2
-    for region_idx in range(len(connection_ys) - 1):
-        region_idx = len(connection_ys) - region_idx - 1
-        direction += 1
-        # Only checks for a connection if there is another room to connect to in that direction from the current room
-        # Ex: There cannot be rooms below the lowest layer, so that direction is not checked for layer 0
-        if ((direction == -1 and layer > 0 and diag < 3) or \
-            (direction == 0 and diag < ROOMS_PER_LAYER[layer] - 1 + (layer == 0)) or \
-            (direction == 1 and (layer == 0 or diag < ROOMS_PER_LAYER[layer] - 1))) and \
-            connection_present(room_connection_hsv[connection_ys[region_idx - 1]:connection_ys[region_idx]]):
-                slot_data["Connections"].append(directions[direction])
+#     room_connection_hsv = hsv_image[y - vertical_gap:y + average_room_height + vertical_gap, x - horizontal_gap:x + round(average_room_width / 2)]
+#     room_connection_hsv[vertical_gap:average_room_height + vertical_gap, horizontal_gap:round(average_room_width / 2) + horizontal_gap] = (0, 0, 0)
+#     connection_ys = [0, vertical_gap, average_room_height + vertical_gap, average_room_height + 2 * vertical_gap]
+#     direction = -2
+#     for region_idx in range(len(connection_ys) - 1):
+#         region_idx = len(connection_ys) - region_idx - 1
+#         direction += 1
+#         # Only checks for a connection if there is another room to connect to in that direction from the current room
+#         # Ex: There cannot be rooms below the lowest layer, so that direction is not checked for layer 0
+#         if ((direction == -1 and layer > 0 and diag < 3) or \
+#             (direction == 0 and diag < ROOMS_PER_LAYER[layer] - 1 + (layer == 0)) or \
+#             (direction == 1 and (layer == 0 or diag < ROOMS_PER_LAYER[layer] - 1))) and \
+#             connection_present(room_connection_hsv[connection_ys[region_idx - 1]:connection_ys[region_idx]]):
+#                 slot_data["Connections"].append(directions[direction])
 
-    for region_idx in range(len(connection_ys) - 1):
-        region_idx = len(connection_ys) - region_idx - 1
-        direction += 1
-        # Only checks for a connection if there is another room to connect to in that direction from the current room
-        # Ex: There cannot be rooms below the lowest layer, so that direction is not checked for layer 0
-        if ((direction == -1 and layer > 0 and diag < 3) or \
-            (direction == 0 and diag < ROOMS_PER_LAYER[layer] - 1 + (layer == 0)) or \
-            (direction == 1 and (layer == 0 or diag < ROOMS_PER_LAYER[layer] - 1))) and \
-            connection_present(room_connection_hsv[connection_ys[region_idx - 1]:connection_ys[region_idx]]):
-                slot_data["Connections"].append(directions[direction])
+#     for region_idx in range(len(connection_ys) - 1):
+#         region_idx = len(connection_ys) - region_idx - 1
+#         direction += 1
+#         # Only checks for a connection if there is another room to connect to in that direction from the current room
+#         # Ex: There cannot be rooms below the lowest layer, so that direction is not checked for layer 0
+#         if ((direction == -1 and layer > 0 and diag < 3) or \
+#             (direction == 0 and diag < ROOMS_PER_LAYER[layer] - 1 + (layer == 0)) or \
+#             (direction == 1 and (layer == 0 or diag < ROOMS_PER_LAYER[layer] - 1))) and \
+#             connection_present(room_connection_hsv[connection_ys[region_idx - 1]:connection_ys[region_idx]]):
+#                 slot_data["Connections"].append(directions[direction])
     
-    # TODO: What if the image doesn't have these?
-    incursion_x = cache["incursion_menu_rect"]["x"]
-    incursion_y = cache["incursion_menu_rect"]["y"]
-    incursion_w = cache["incursion_menu_rect"]["w"]
-    incursion_h = cache["incursion_menu_rect"]["h"]
-    incursion_menu_hsv = hsv_image[incursion_y:incursion_y + incursion_h, incursion_x:incursion_x + incursion_w]
-    incursion_data = read_incursion_submenu(incursion_menu_hsv)
+#     # TODO: What if the image doesn't have these?
+#     incursion_x = cache["incursion_menu_rect"]["x"]
+#     incursion_y = cache["incursion_menu_rect"]["y"]
+#     incursion_w = cache["incursion_menu_rect"]["w"]
+#     incursion_h = cache["incursion_menu_rect"]["h"]
+#     incursion_menu_hsv = hsv_image[incursion_y:incursion_y + incursion_h, incursion_x:incursion_x + incursion_w]
+#     incursion_data = read_incursion_submenu(incursion_menu_hsv)
 
-    # TODO: Or these?
-    remaining_x = cache["incursions_remaining_rect"]["x"]
-    remaining_y = cache["incursions_remaining_rect"]["y"]
-    remaining_w = cache["incursions_remaining_rect"]["w"]
-    remaining_h = cache["incursions_remaining_rect"]["h"]
-    incursions_remaining_hsv = hsv_image[remaining_y:remaining_y + remaining_h, remaining_x:remaining_x + remaining_w]
-    incursions_remaining = read_incursions_remaining(incursions_remaining_hsv)
+#     # TODO: Or these?
+#     remaining_x = cache["incursions_remaining_rect"]["x"]
+#     remaining_y = cache["incursions_remaining_rect"]["y"]
+#     remaining_w = cache["incursions_remaining_rect"]["w"]
+#     remaining_h = cache["incursions_remaining_rect"]["h"]
+#     incursions_remaining_hsv = hsv_image[remaining_y:remaining_y + remaining_h, remaining_x:remaining_x + remaining_w]
+#     incursions_remaining = read_incursions_remaining(incursions_remaining_hsv)
 
-    output = {"slot": slot_data, "incursion": incursion_data, "remaining": incursions_remaining}
+#     output = {"slot": slot_data, "incursion": incursion_data, "remaining": incursions_remaining}
 
 
 if __name__ == "__main__":

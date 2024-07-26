@@ -3,7 +3,7 @@ from math import ceil, floor
 
 from src.constants import ROOM_DATA, ARCHITECTS, SCARABS
 from src.temple_layout import TempleLayout
-from src.slot import chronicle_key
+from src.slot import Slot, chronicle_key
 from src.room import Room
 from src.incursion import Incursion
 from src.decisions import choose_incursion_room, choose_which_doors_to_open, choose_to_leave_map_early
@@ -70,9 +70,20 @@ class Temple:
     def update_slot_from_vision_output(self, vision_output):
         slot_str = list(vision_output["layout"].keys())[0]
         self.incursions_remaining = vision_output["remaining"]
+        old_tier = self.incursion.room.tier
+        old_architect = self.incursion.room.architect
+        old_doors = (self.layout.connection_map[Slot.from_str(slot_str)] == 1).sum()
         self.incursion = Incursion.new(**vision_output["incursion"])
         self.layout.update_slot_from_vision_output(slot_str, vision_output["layout"][slot_str])
+        tiers_added = self.layout.slot_map["Room"][Slot.from_str(slot_str)].tier - old_tier
 
+        was_swapped = True
+        if old_architect == self.layout.slot_map["Room"][Slot.from_str(slot_str)].architect:
+            was_swapped = False
+        
+        new_doors = (self.layout.connection_map[Slot.from_str(slot_str)] == 1).sum() - old_doors
+
+        return new_doors, was_swapped, tiers_added
     
     def make_decisions(self):
         self.selected_option = choose_incursion_room(self.incursion)

@@ -14,13 +14,15 @@ import pygetwindow as gw
 import random
 import pytesseract
 import os
+from pathlib import Path
 
 from src.temple import Temple
 from src.vision import process_screenshot
 from src.constants import ROOM_DATA, ARCHITECTS
+from src.language import LANGUAGE_DATA
 from src.decisions import TIE_BREAKERS
 from src.slot import Slot
-from src.data import Settings
+from src.data import Settings, ImageParams, Metrics
 
 
 IMMERSIVE_BG = "#17120f"
@@ -30,8 +32,16 @@ CONTRAST_FG = "#000000"
 BG_OPTIONS = {True: IMMERSIVE_BG, False: CONTRAST_BG}
 FG_OPTIONS = {True: IMMERSIVE_FG, False: CONTRAST_FG}
 
-with open(r"src\program_data.json") as f:
-    SUPPORTED_LANGUAGES = list(json.load(f).keys())
+if not os.path.exists(r"src\config.json"):
+    with open(r"src\config.json", "w") as f:
+        config = {
+            "settings": Settings().__dict__,
+            "image_params": ImageParams().__dict__,
+            "metrics": Metrics().__dict__, # TODO: Move rooms and program data to python files
+        }
+        json.dump(config, f, indent=4)
+
+SUPPORTED_LANGUAGES = list(LANGUAGE_DATA.keys())
 
 
 class IncursionApp():
@@ -40,43 +50,48 @@ class IncursionApp():
 
         with open(r"src\config.json") as f:
             self.config = json.load(f)
-        
+       
         self.settings = Settings.from_dict(self.config["settings"])
-        
+        self.image_params = ImageParams.from_dict(self.config["image_params"])
+        self.metrics = Metrics.from_dict(self.config["metrics"])
+       
         # Get poe window info here
         self.configure_root()
         self.ui_vars = self.settings.to_tk_vars()
 
         self.last_file_change = None
-        self.open_incursion = False
+        self.incursion_is_open = False
         self.previous_incursion = None
         self.show_settings_in_hideout = tk.BooleanVar(value=False)
         self.thread_running = False
 
+        self.start = 0
+        self.end = 0
+
         kb.add_hotkey(self.settings.screenshot_keybind, self.screenshot_keybind_pressed)
         self.program_data = load_program_data(self.settings.language)
         pytesseract.pytesseract.tesseract_cmd = self.settings.tesseract_exe_path
-        
+       
         if self.settings.show_settings_on_startup:
             self.create_settings_frame()
-        
+       
     def run(self):
         self.start_backend_thread()
         self.root.mainloop()
-    
+   
     def start_backend_thread(self):
         if self.settings.client_txt_path != "":
             self.thread_running = True
             self.backend_thread = threading.Thread(target=self.watch_client_txt)
             self.backend_thread.start()
-    
+   
     def configure_root(self):
         self.root = tk.Tk()
         self.root.configure(bg="")
         self.root.overrideredirect(True)
         self.root.wm_attributes('-topmost', True)
         self.root.withdraw()
-    
+   
     def create_settings_frame(self):
         self.root.geometry("")
 
@@ -132,19 +147,19 @@ class IncursionApp():
 
         self.frame.pack()
         self.root.deiconify()
-    
+   
     def save_and_close_settings_frame(self):
         try:
             old_keybind = self.settings.screenshot_keybind
             self.settings = Settings.from_tk_vars(self.ui_vars)
         except ValueError:
             return
-        
+       
         self.settings.cached = True
-        
+       
         if self.thread_running is False:
             self.start_backend_thread()
-        
+       
         kb.remove_hotkey(old_keybind)
         kb.add_hotkey(self.settings.screenshot_keybind, self.screenshot_keybind_pressed)
         pytesseract.pytesseract.tesseract_cmd = self.settings.tesseract_exe_path
@@ -155,33 +170,32 @@ class IncursionApp():
         with pd.option_context("future.no_silent_downcasting", True):
             ROOM_DATA["Valuable"] = ROOM_DATA["Valuable"].fillna(False).astype(bool)
             ARCHITECTS["Valuable"] = ROOM_DATA[["Theme", "Valuable"]][ROOM_DATA["Tier"] == 3].set_index("Theme")
-        
+       
         if TIE_BREAKERS[Slot(0, 4)] > 100 and self.settings.rooms["Apex of Atzoatl"]:
             TIE_BREAKERS[Slot(0, 4)] -= 100
         elif TIE_BREAKERS[Slot(0, 4)] < 100 and not self.settings.rooms["Apex of Atzoatl"]:
             TIE_BREAKERS[Slot(0, 4)] += 100
 
-        self.config["settings"] = self.settings.__dict__
-        save_config(self.config)
+        self.save_config()
         self.program_data = load_program_data(self.settings.language)
         self.close_settings_frame()
-    
+   
     def close_settings_frame(self):
         self.frame.forget()
         self.root.withdraw()
-    
+   
     def select_client_txt_path(self):
         self.ui_vars["client_txt_path"].set(fd.askdirectory(mustexist=True) + "/client.txt")
-    
+   
     def select_tesseract_exe_path(self):
         self.ui_vars["tesseract_exe_path"].set(fd.askdirectory(mustexist=True) + "/tesseract.exe")
-    
+   
     def set_keybind_label(self):
         keybind = kb.read_hotkey()
         kb.stash_state()
         self.screenshot_keybind_button.config(text=keybind)
         self.ui_vars["screenshot_keybind"].set(keybind)
-    
+   
     def create_temple_frame(self, choose_left, choose_swap, leave_early, rooms_to_connect, map_area_level):
         self.label_bg = BG_OPTIONS[self.settings.immersive_ui]
         self.label_fg = FG_OPTIONS[self.settings.immersive_ui]
@@ -212,13 +226,13 @@ class IncursionApp():
         # How big should the font be?
         self.choice_label = tk.Label(master=self.frame, text=text, font=("Arial", 25), bg=self.label_bg, fg=self.label_fg) # TODO: WSTNB?
 
-        label_y = self.config["image_params"]["incursion_menu_rect"]["y"] + self.config["image_params"]["incursion_menu_rect"]["h"] / 2 # TODO: WSTNB?
+        label_y = self.image_params.incursion_menu_rect["y"] + self.image_params.incursion_menu_rect["h"] / 2 # TODO: WSTNB?
         label_y -= self.choice_label.winfo_reqheight() / 2
         label_y = ceil(label_y)
 
-        label_x = self.config["image_params"]["incursion_menu_rect"]["x"] + self.config["image_params"]["incursion_menu_rect"]["w"] / x_div
+        label_x = self.image_params.incursion_menu_rect["x"] + self.image_params.incursion_menu_rect["w"] / x_div
         if choose_left is False:
-            label_x += (x_div - 2) * self.config["image_params"]["incursion_menu_rect"]["w"] / x_div
+            label_x += (x_div - 2) * self.image_params.incursion_menu_rect["w"] / x_div
         label_x -= self.choice_label.winfo_reqwidth() / 2
         label_x = ceil(label_x)
 
@@ -228,8 +242,8 @@ class IncursionApp():
         text = random.choice(self.program_data["tips"])
         # text = "This is a placeholder, but we will have a random set of tips in a list somewhere"
         self.tip_label = tk.Label(master=self.frame, text=text, font=("Arial", 18), bg=self.label_bg, fg=self.label_fg)
-        label_x = self.config["image_params"]["incursions_remaining_rect"]["x"] + self.config["image_params"]["incursions_remaining_rect"]["w"] / 2
-        label_y = self.config["image_params"]["incursions_remaining_rect"]["y"] + self.config["image_params"]["incursions_remaining_rect"]["h"]
+        label_x = self.image_params.incursions_remaining_rect["x"] + self.image_params.incursions_remaining_rect["w"] / 2
+        label_y = self.image_params.incursions_remaining_rect["y"] + self.image_params.incursions_remaining_rect["h"]
         label_y = ceil(label_y)
         label_x -= self.tip_label.winfo_reqwidth() / 2
         label_x = ceil(label_x)
@@ -252,28 +266,32 @@ class IncursionApp():
             for room in rooms_to_connect:
                 text += f"\n{count}: {room}"
                 count += 1
-        
+       
         text += f"\n\nIncursion Area Level must be >= {map_area_level}\n(to create a level 83 temple)"
        
         self.door_label = tk.Label(master=self.frame, text=text, font=("Arial", 14), bg=self.label_bg, fg=self.label_fg)
-        label_y = self.config["image_params"]["incursion_menu_rect"]["y"] + self.config["image_params"]["incursion_menu_rect"]["h"]
-        label_x = self.config["image_params"]["incursion_menu_rect"]["x"] + self.config["image_params"]["incursion_menu_rect"]["w"] / 2
+        label_y = self.image_params.incursion_menu_rect["y"] + self.image_params.incursion_menu_rect["h"]
+        label_x = self.image_params.incursion_menu_rect["x"] + self.image_params.incursion_menu_rect["w"] / 2
         label_x = ceil(label_x)
         self.door_label.place(x=label_x, y=label_y)
-    
+   
     def add_metrics_frame(self):
-        metrics_frame = tk.Frame(self.frame)
-        label_y = self.config["image_params"]["incursion_menu_rect"]["y"]
-        label_x = self.config["image_params"]["incursion_menu_rect"]["x"] - 2 * self.config["image_params"]["incursion_menu_rect"]["w"]
+        metrics_frame = tk.Frame(self.frame, bg=self.label_bg)
+        label_y = self.image_params.incursion_menu_rect["y"]
+        label_x = self.image_params.incursion_menu_rect["x"] - 1.75 * self.image_params.incursion_menu_rect["w"]
         label_x = ceil(label_x)
         metrics_frame.place(x=label_x, y=label_y)
 
-        exit_button = tk.Button(master=metrics_frame, text="EXIT PROGRAM", command=self.exit_program)
+        exit_button = tk.Button(master=metrics_frame, text="EXIT PROGRAM", font=("Arial", 14), command=self.exit_program, bg=self.label_bg, fg=self.label_fg)
         exit_button.pack()
 
-        hideout_settings_checkbox = tk.Checkbutton(master=metrics_frame, text=self.program_data["ui_labels"]["settings_hideout_text"], variable=self.show_settings_in_hideout, onvalue=1, offvalue=0)
+        hideout_settings_checkbox = tk.Checkbutton(master=metrics_frame, text=self.program_data["ui_labels"]["settings_hideout_text"], variable=self.show_settings_in_hideout, onvalue=1, offvalue=0, font=("Arial", 14), bg=self.label_bg, fg=self.label_fg)
         hideout_settings_checkbox.pack()
-    
+
+        metrics_text = str(self.metrics)
+        metrics_label = tk.Label(master=metrics_frame, text=metrics_text, font=("Arial", 14), bg=self.label_bg, fg=self.label_fg)
+        metrics_label.pack()
+   
     def exit_program(self):
         if self.thread_running is True:
             self.thread_running = False
@@ -285,7 +303,13 @@ class IncursionApp():
         self.root.withdraw()
         win = gw.getWindowsWithTitle("Path of Exile")[0]
         win.activate()
-        
+   
+    def save_config(self):
+        self.config["settings"] = self.settings.__dict__
+        self.config["image_params"] = self.image_params.__dict__
+        self.config["metrics"] = self.metrics.__dict__
+        save_config(self.config)
+       
     def watch_client_txt(self):
         """
         Monitoring client.txt for any changes
@@ -295,7 +319,7 @@ class IncursionApp():
             if self.last_file_change != latest_change:
                 self.last_file_change = latest_change
                 self.read_client_txt()
-    
+   
     def read_client_txt(self):
         """
         Reading client.txt to check for Alva opening/finishing an Incursion.
@@ -304,33 +328,58 @@ class IncursionApp():
             last_line = str(self.f.readlines()[-1])
             # May break if Client.txt does not track datetime with the setting turned off
             if any(quote in last_line for quote in self.program_data["alva_opening_incursion_quotes"]) and last_line.count(':') == 3:
-                self.open_incursion = True
+                self.open_new_incursion()
             elif any(quote in last_line for quote in self.program_data["alva_closing_incursion_quotes"]) and last_line.count(":") == 3:
-                self.open_incursion = False
+                self.close_active_incursion()
             elif self.program_data["hideout_line"] in last_line and last_line.count(":") == 2 and self.show_settings_in_hideout.get() is True:
+                if self.incursion_is_open:
+                    self.close_active_incursion()
                 self.show_settings_in_hideout.set(False)
                 self.create_settings_frame()
             self.f.close()
         self.f = None # Does this need to be self?
-    
+   
+    def open_new_incursion(self):
+        self.incursion_is_open = True
+        self.start = int(time.time())
+   
+    def close_active_incursion(self):
+        # TODO: Handle the player crashing or exiting the game, is this event logged in client.txt?
+        self.incursion_is_open = False
+        self.end = int(time.time())
+        self.metrics.record_incursion_time(self.end - self.start)
+        self.save_config()
+        self.start = 0
+        self.end = 0
+   
     def screenshot_keybind_pressed(self):
-        if self.settings.screenshot_method_is_manual or self.open_incursion:
+        if self.settings.screenshot_method_is_manual or self.incursion_is_open:
             self.take_screenshot()
-    
+   
     def take_screenshot(self):
         try:
             self.sct = mss.mss()
             monitor = self.sct.monitors[1]
-            self.config["image_params"], image_output = process_screenshot(np.array(self.sct.grab(monitor)), self.config["image_params"])
-            save_config(self.config)
+            self.image_params, image_output = process_screenshot(
+                np.array(self.sct.grab(monitor)),
+                self.image_params,
+                previous=self.previous_incursion
+            )
 
             if self.previous_incursion is None:
                 self.temple = Temple.from_vision_output(image_output)
+                self.metrics.record_new_temple(self.temple)
             else:
-                self.temple.update_slot_from_vision_output(image_output)
+                updates = self.temple.update_slot_from_vision_output(image_output)
+                self.metrics.record_temple_updates(*updates)
 
             self.previous_incursion = self.temple.get_previous_incursion()
+            self.metrics.record_incursion(self.temple.incursion)
+           
             choose_left, choose_swap, leave_early, priority_doors, map_area_level = self.temple.make_decisions()
+
+            self.save_config()
+
             self.create_temple_frame(choose_left, choose_swap, leave_early, priority_doors, map_area_level)
         except cv2.error:
             # Assume temple screen is not open
@@ -342,8 +391,7 @@ def save_config(config):
         json.dump(config, f, indent=4)
 
 def load_program_data(language):
-    with open(r"src\program_data.json") as f:
-        return json.load(f)[language]
+    return LANGUAGE_DATA[language]
 
 
 if __name__ == '__main__':

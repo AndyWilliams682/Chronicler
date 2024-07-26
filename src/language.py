@@ -1,4 +1,4 @@
-{
+LANGUAGE_DATA = {
     "english": {
         "alva_opening_incursion_quotes": [
             "Alva, Master Explorer: Let's go.",
@@ -34,7 +34,7 @@
             "close_text": "Close",
             "swap_text": "Swap",
             "upgrade_text": "Upgrade",
-            "skip_incursions_text": "Skip the other incursions in this map!",
+            "skip_incursions_text": "Consider skipping the other incursions in this map",
             "door_order_text": "Open doors in this order:",
             "settings_hideout_text": "Show settings upon entering Hideout"
         }

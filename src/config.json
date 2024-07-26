@@ -1,9 +1,9 @@
 {
     "settings": {
-        "cached": false,
+        "cached": true,
         "language": "english",
-        "client_txt_path": "",
-        "tesseract_exe_path": "",
+        "client_txt_path": "C:/Program Files (x86)/Steam/steamapps/common/Path of Exile/logs/client.txt",
+        "tesseract_exe_path": "C:/Program Files/Tesseract-OCR/tesseract.exe",
         "show_tips": true,
         "screenshot_method_is_manual": true,
         "screenshot_keybind": "tab",
@@ -39,6 +39,7 @@
         }
     },
     "image_params": {
+        "cached": true,
         "room_details": {
             "room_width": 229,
             "room_height": 112,
@@ -58,12 +59,12 @@
                 "x": 883,
                 "y": 868
             },
-            "1F1": {
-                "x": 1312,
-                "y": 728
-            },
             "1F0": {
                 "x": 1589,
+                "y": 729
+            },
+            "1F1": {
+                "x": 1307,
                 "y": 729
             },
             "1F2": {
@@ -87,8 +88,8 @@
                 "y": 589
             },
             "3F0": {
-                "x": 1307,
-                "y": 450
+                "x": 1312,
+                "y": 449
             },
             "3F1": {
                 "x": 1024,
@@ -110,7 +111,46 @@
             "y": 1014,
             "w": 337,
             "h": 112
+        }
+    },
+    "metrics": {
+        "total_incursion_time": 190,
+        "total_incursions": 13,
+        "average_incursion_time": 15.833333333333334,
+        "total_temples": 7,
+        "average_time_per_temple": 27.142857142857142,
+        "total_stones_used": 1,
+        "average_stones_per_temple": 0.14285714285714285,
+        "resource_reallocation_tiers": 1,
+        "contested_development_tiers": -6,
+        "architect_appearances": {
+            "UN": 0,
+            "AR": 3,
+            "IR": 0,
+            "PS": 0,
+            "MN": 7,
+            "$$": 1,
+            "RG": 0,
+            "EX": 0,
+            "LF": 4,
+            "IT": 0,
+            "TR": 1,
+            "LG": 3,
+            "CR": 0,
+            "FR": 9,
+            "UP": 4,
+            "PP": 0,
+            "WP": 0,
+            "TM": 7,
+            "TS": 0,
+            "MP": 7,
+            "MM": 7,
+            "LN": 7,
+            "GM": 1,
+            "SB": 0,
+            "BR": 7
         },
-        "cached": 1
+        "new_doors": 8,
+        "new_tier_1_rooms": 8
     }
 }

@@ -270,6 +270,18 @@ class TempleLayout():
         obstructed_rooms = obstructed_rooms[obstructed_rooms.apply(lambda room: room.tier > 0)]
         obstructed_rooms = sorted(obstructed_rooms, key=lambda room: ARCHITECTS["Price"][room.architect], reverse=True)
         pass
+
+    def count_open_doors(self):
+        return int((self.connection_map.values == 1).sum() / 2)
+   
+    def count_tier_x_rooms(self, tier: int):
+        return sum(self.slot_map["Room"].apply(lambda room: room.tier == tier))
+   
+    def get_architects(self):
+        architects = self.slot_map["Room"].apply(lambda room: room.architect)
+        architects = architects[architects.str.len() < 3]
+        architects = architects[architects.str.isupper()]
+        return architects.values
     
     def __str__(self):
         r"""
