@@ -5,3 +5,5 @@
 **/__pycache__/
 *.ods*
 .coverage
+/build
+main.spec
