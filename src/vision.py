@@ -210,8 +210,6 @@ def read_image_using_saved_params(hsv_image, cache, previous = None):
     
     layout_data = {}
     for slot in cache.slots_to_xy:
-        if previous is not None:
-            print(previous, type(previous["slot"]))
         if continuous and slot != str(previous["slot"]):
             continue
         layout_data[slot] = {"Name": None, "Connections": []}
